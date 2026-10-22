@@ -5,6 +5,7 @@ import Different from "@/components/Different";
 import Expect from "@/components/Expect";
 import Mission from "@/components/Mission";
 import Cta from "@/components/Cta";
+import { home } from "@/content/site";
 
 export default function HomePage() {
   return (
@@ -15,7 +16,7 @@ export default function HomePage() {
       <Different />
       <Expect />
       <Mission />
-      <Cta />
+      <Cta {...home.cta} social />
     </>
   );
 }
