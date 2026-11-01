@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { Arrow, Check } from "./Icons";
 import { contact } from "@/content/site";
 
-type Status = "idle" | "sending" | "sent" | "mailto" | "error";
+type Status = "idle" | "sending" | "sent" | "error";
 
 const f = contact.form;
 
-// Contact form. Posts to /api/contact, which emails the message once RESEND_API_KEY is set
-// (see README). Until then it opens the visitor's email app with the message filled in,
-// so no enquiry is lost.
+// Contact form. Posts to /api/contact, which emails the message to Garcode with Resend
+// (set RESEND_API_KEY — see README).
 export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [interest, setInterest] = useState("");
@@ -26,41 +25,22 @@ export default function ContactForm() {
     const form = e.currentTarget;
     const data = Object.fromEntries(new FormData(form)) as Record<string, string>;
     const interestLabel = f.interests.find((i) => i.value === data.interest)?.label ?? "";
-    const payload: Record<string, string> = { ...data, interest: interestLabel };
     setStatus("sending");
 
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...data, interest: interestLabel }),
       });
-      if (res.ok) {
-        setStatus("sent");
-        form.reset();
-        setInterest("");
-        return;
-      }
-      if (res.status !== 503) throw new Error(String(res.status));
+      if (!res.ok) throw new Error(String(res.status));
+      setStatus("sent");
+      form.reset();
+      setInterest("");
     } catch {
-      // fall through to the email-app fallback below
+      // Keep what the visitor typed so they can try again.
+      setStatus("error");
     }
-
-    // Email sending isn't set up (or the request failed): hand over to the visitor's mail app.
-    const body = [
-      `Name: ${payload.name}`,
-      `Email: ${payload.email}`,
-      payload.phone && `Phone: ${payload.phone}`,
-      interestLabel && `Interested in: ${interestLabel}`,
-      payload.organisation && `Organisation/school: ${payload.organisation}`,
-      "",
-      payload.message,
-    ]
-      .filter((l) => l !== undefined && l !== "")
-      .join("\n");
-    const subject = `Website enquiry${interestLabel ? ` · ${interestLabel}` : ""} — ${payload.name}`;
-    window.location.href = `mailto:${f.to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setStatus("mailto");
   }
 
   if (status === "sent") {
@@ -73,7 +53,7 @@ export default function ContactForm() {
   }
 
   return (
-    <form className="form-card reveal" onSubmit={onSubmit} noValidate={false}>
+    <form className="form-card reveal" onSubmit={onSubmit}>
       <h2>{f.title}</h2>
       <div className="field-row">
         <label className="field">
@@ -112,12 +92,11 @@ export default function ContactForm() {
       <input className="hp" name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
 
       <button className="btn btn-primary" type="submit" disabled={status === "sending"}>
-        {status === "sending" ? "Sending…" : f.button} <Arrow />
+        {status === "sending" ? "Sending…" : status === "error" ? "Try Again" : f.button} <Arrow />
       </button>
-      {status === "mailto" && (
-        <p className="form-note" role="status">
-          Your email app should open with your message ready to send. If it doesn&apos;t, email us at{" "}
-          <a href={`mailto:${f.to}`}>{f.to}</a>.
+      {status === "error" && (
+        <p className="form-note form-error" role="alert">
+          {f.error} <a href={`mailto:${f.to}`}>{f.to}</a>
         </p>
       )}
     </form>

@@ -531,7 +531,8 @@ export const contact = {
     ],
     button: "Send My Request",
     confirmation: "Thank you. We've received your message and will get back to you within 24 hours.",
-    // Where messages go. The API route sends here; the mail-app fallback uses it too.
+    error: "We couldn't send your message just now. Please try again, or email us directly at",
+    // Inbox that receives enquiries. CONTACT_TO in the environment overrides it (see .env.example).
     to: "info@garcodedigital.com",
   },
 } as const;
