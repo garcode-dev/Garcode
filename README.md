@@ -48,15 +48,24 @@ page as a dashed **To confirm** box. Replace each with a plain string. Outstandi
 - About: founder bio (2–3 sentences) and photo
 - Comments in site.ts also flag: how school programmes and school fees are structured
 
-## Contact form — turn on email delivery
-The form posts to `/api/contact`, which sends through Resend (https://resend.com).
-On Vercel/Netlify set these environment variables:
-- `RESEND_API_KEY` (required)
-- `CONTACT_TO` — inbox for enquiries (default `info@garcodedigital.com`)
-- `CONTACT_FROM` — sender on a domain verified in Resend, e.g. `Garcode Website <website@garcodedigital.com>`
+## Contact form (Resend)
+The form posts to `/api/contact`, which emails each enquiry to Garcode with Resend (https://resend.com).
+The email has the visitor's details, and Reply goes straight to the visitor.
 
-Until `RESEND_API_KEY` is set, submitting opens the visitor's email app with their message filled in,
-so no enquiry is lost. Links like `/contact?interest=boomers` pre-select the "I'm interested in" option.
+1. Create a Resend account and an API key at resend.com/api-keys.
+2. Verify Garcode's domain at resend.com/domains (adds a few DNS records).
+3. Copy `.env.example` to `.env.local` and fill it in for local testing:
+   - `RESEND_API_KEY` (required)
+   - `CONTACT_FROM`: sender on the verified domain, e.g. `Garcode Website <website@garcodedigital.com>`
+   - `CONTACT_TO`: inbox for enquiries (default `info@garcodedigital.com`; comma-separate several)
+4. Add the same three variables in Vercel/Netlify → Settings → Environment variables, then redeploy.
+
+Before the domain is verified you can test with `CONTACT_FROM="Garcode Website <onboarding@resend.dev>"`,
+but Resend then only delivers to the email address you signed up to Resend with.
+
+If sending fails (or the key isn't set), the visitor sees an error with Garcode's email address and keeps
+what they typed; the reason is logged on the server. Links like `/contact?interest=boomers` pre-select
+the "I'm interested in" option.
 
 ## Still to do before launch
 Search the code for `TODO` and `todo(`:
