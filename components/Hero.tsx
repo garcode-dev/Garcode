@@ -35,7 +35,7 @@ export default function Hero() {
           </div>
         </div>
         <div className="hero-gallery reveal">
-          {h.photos.map((p) => <Placeholder key={p} label={p} />)}
+          {h.photos.map((p, i) => <Placeholder key={p} label={p} priority={i === 1} />)}
         </div>
       </div>
     </section>
