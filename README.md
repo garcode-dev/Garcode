@@ -21,6 +21,10 @@ npm run dev      # open http://localhost:3000
 | `/testimonials` | 6 · Testimonials |
 | `/about` | 7 · About the Founder & Founding Philosophy |
 | `/contact` | 8 · Contact (form posts to `/api/contact`) |
+| `/school-of-life` | School of Life by Garcode (extension copy) |
+| `/school-of-life/register`, `/login`, `/forgot-password`, `/reset-password` | School of Life accounts |
+| `/school-of-life/dashboard` | Learner dashboard (signed-in only) |
+| `/school-of-life/learn/<lesson-id>` | Lesson player (signed-in only) |
 
 ## Where things live
 ```
@@ -66,6 +70,44 @@ but Resend then only delivers to the email address you signed up to Resend with.
 If sending fails (or the key isn't set), the visitor sees an error with Garcode's email address and keeps
 what they typed; the reason is logged on the server. Links like `/contact?interest=boomers` pre-select
 the "I'm interested in" option.
+
+## School of Life (accounts, dashboard, YouTube micro-lessons)
+Learners create a free account, then watch lessons on their dashboard. Progress, XP, daily streaks
+and badges are saved in a **Neon** Postgres database. Logins are handled by **Better Auth**
+(open source, runs inside this site). Password-reset emails go out through Resend.
+
+### One-time setup
+1. **Create a Neon database** at https://neon.tech (free plan is fine). In the Neon console click
+   **Connect** and copy the connection string.
+2. **Fill in `.env.local`** (see `.env.example`):
+   - `DATABASE_URL`: the Neon connection string
+   - `BETTER_AUTH_SECRET`: run `openssl rand -base64 32` in Terminal and paste the result
+   - `BETTER_AUTH_URL`: `http://localhost:3000` locally
+3. **Create the tables:** run `npm run db:setup`. It's safe to run again; it only adds what's missing.
+4. Restart `npm run dev` and open http://localhost:3000/school-of-life.
+
+For the live site, add the same variables in Vercel/Netlify (with `BETTER_AUTH_URL` set to the real
+domain, e.g. `https://garcodedigital.com`) and redeploy. Password-reset emails use the same
+`RESEND_API_KEY` and `CONTACT_FROM` as the contact form.
+
+### Adding the YouTube lessons
+Everything lives in `content/schoolOfLife.ts`:
+- Each lesson has a `youtubeId`. Paste the ID from the link: `youtube.com/shorts/AbC123xyz` → `"AbC123xyz"`.
+  Unlisted videos work. Lessons without an ID show "Video coming soon" and can't be completed.
+- Add more lessons to a module by adding to its `lessons` list. Give each a unique `id` and
+  **don't rename ids after launch**: learners' progress is saved against them.
+- The quick-check quiz after each lesson is a **draft** written from the module title. Review or
+  replace them, or set `quiz: null` to skip one.
+
+### How progress works
+- Watching saves your place every 10 seconds, so "Resume" picks up where you stopped.
+- Finishing a video (or pressing Mark as Complete) gives 10 XP; a correct first quiz answer gives 5 XP.
+- Completing at least one lesson a day keeps the streak going (days counted in Lagos time).
+- Badges: first lesson, 3- and 7-day streaks, 5 correct quizzes, and finishing each track.
+- XP values, the time zone and other settings are at the top of `content/schoolOfLife.ts`.
+
+Code: `lib/auth.ts` (accounts), `lib/sol.ts` (progress), `app/school-of-life/` (pages),
+`components/sol/` (forms, player), `db/school-of-life.sql` + `scripts/db-setup.mjs` (tables).
 
 ## Still to do before launch
 Search the code for `TODO` and `todo(`:

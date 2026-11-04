@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { contact } from "@/content/site";
+import { senderAddress } from "@/lib/email";
 
 // Receives the contact form and emails it to Garcode with Resend (https://resend.com).
 //
@@ -49,7 +50,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "not_configured" }, { status: 503 });
   }
 
-  const from = process.env.CONTACT_FROM || "Garcode Website <onboarding@resend.dev>";
+  const { from, problem } = senderAddress("Garcode Website <onboarding@resend.dev>");
+  if (problem) {
+    console.error("[contact]", problem);
+    return NextResponse.json({ error: "send_failed" }, { status: 502 });
+  }
   const to = (process.env.CONTACT_TO || contact.form.to)
     .split(",")
     .map((s) => s.trim())

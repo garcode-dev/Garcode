@@ -39,6 +39,7 @@ export const site = {
   nav: [
     { label: "Services", href: "/services" },
     { label: "Academy", href: "/academy" },
+    { label: "School of Life", href: "/school-of-life" },
     { label: "Our Work", href: "/work" },
     { label: "Advantage", href: "/advantage" },
     { label: "About", href: "/about" },
@@ -552,6 +553,7 @@ export const footerLinks = [
     links: [
       { label: "Garcode Academy", href: "/academy" },
       { label: "Tech Boomers", href: "/academy#tech-boomers" },
+      { label: "School of Life", href: "/school-of-life" },
       { label: "About the Founder", href: "/about" },
       { label: "Contact", href: "/contact" },
     ],

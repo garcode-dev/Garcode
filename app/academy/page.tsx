@@ -3,6 +3,7 @@ import PageHero from "@/components/PageHero";
 import Cta from "@/components/Cta";
 import SmartLink from "@/components/SmartLink";
 import Text from "@/components/Text";
+import SolIntro from "@/components/sol/SolIntro";
 import { Arrow, Check, FeatureIcon, type FeatureIconName } from "@/components/Icons";
 import { academy as a } from "@/content/site";
 
@@ -65,6 +66,8 @@ export default function AcademyPage() {
           </div>
         </div>
       </section>
+
+      <SolIntro showCta paper />
 
       <section aria-labelledby="exp-title">
         <div className="wrap">
